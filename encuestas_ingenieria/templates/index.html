@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Inicio | Encuestas Ingeniería{% endblock %}
+{% block content %}
+<section class="hero-panel mb-4">
+  <div class="hero-content">
+    <span class="eyebrow">PROYECTO FINAL DE ESTADÍSTICA</span>
+    <h1>Conocer los medios para llegar a más estudiantes</h1>
+    <p>Recopila respuestas, analiza los resultados y utiliza inteligencia artificial para proponer una estrategia de marketing educativo basada en datos.</p>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-light btn-lg" href="{{ url_for('encuesta') }}">Registrar encuesta</a>
+      <a class="btn btn-outline-light btn-lg" href="{{ url_for('resultados') }}">Ver resultados</a>
+    </div>
+  </div>
+</section>
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3"><div class="metric-card"><span class="metric-label">Encuestas registradas</span><strong>{{ stats.total_surveys }}</strong><small>Respuestas almacenadas</small></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="metric-card"><span class="metric-label">Medio principal frecuente</span><strong class="metric-text">{{ stats.top_main_medium.label if stats.top_main_medium else "Sin datos" }}</strong><small>{% if stats.top_main_medium %}{{ stats.top_main_medium.count }} respuestas · {{ stats.top_main_medium.percentage }}%{% else %}Registra encuestas para calcularlo{% endif %}</small></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="metric-card"><span class="metric-label">Mayor influencia</span><strong class="metric-text">{{ stats.top_influence_medium.label if stats.top_influence_medium else "Sin datos" }}</strong><small>Según la pregunta de influencia</small></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="metric-card"><span class="metric-label">Última encuesta</span><strong class="metric-text">{{ stats.last_survey or "Sin datos" }}</strong><small>Fecha de registro</small></div></div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-4"><div class="feature-card h-100"><div class="feature-icon">01</div><h2>Encuesta</h2><p>Recopila información de forma sencilla y sin solicitar identificadores personales innecesarios.</p><a href="{{ url_for('encuesta') }}" class="text-link">Completar formulario →</a></div></div>
+  <div class="col-lg-4"><div class="feature-card h-100"><div class="feature-icon">02</div><h2>Análisis estadístico</h2><p>Consulta frecuencias, porcentajes y gráficas generadas a partir de los registros reales.</p><a href="{{ url_for('resultados') }}" class="text-link">Consultar resultados →</a></div></div>
+  <div class="col-lg-4"><div class="feature-card h-100"><div class="feature-icon">03</div><h2>Estrategia con IA</h2><p>Solicita a Gemini una propuesta de marketing que tome como base los resultados agregados.</p><a href="{{ url_for('estrategia') }}" class="text-link">Generar estrategia →</a></div></div>
+</div>
+{% endblock %}

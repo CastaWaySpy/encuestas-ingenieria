@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Estrategia con IA | Encuestas Ingeniería{% endblock %}
+{% block content %}
+<div class="page-heading"><span class="eyebrow">INTELIGENCIA ARTIFICIAL</span><h1>Estrategia de marketing con Gemini</h1><p>La estrategia se genera bajo demanda a partir de estadísticas agregadas de las encuestas almacenadas.</p></div>
+<div class="ai-callout mb-4"><div class="ai-mark">✦</div><div><h2>De los datos a las acciones</h2><p class="mb-0">Gemini propondrá un diagnóstico, objetivos, acciones para 90 días, presupuestos estimados e indicadores. Las recomendaciones no garantizan resultados.</p></div></div>
+<form method="post" id="strategyForm" class="mb-4">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button class="btn btn-primary btn-lg" type="submit" id="generateBtn">✦ Generar estrategia con IA</button>
+  <span class="field-help ms-2">La solicitud requiere conexión a internet y una clave válida de Gemini API.</span>
+</form>
+<div id="loadingNotice" class="alert alert-info d-none" role="status">Generando la estrategia. Puede tardar unos segundos...</div>
+{% if pending %}
+<div class="strategy-panel mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div><span class="eyebrow">ESTRATEGIA RECIÉN GENERADA</span><h2>Propuesta de marketing</h2><p class="field-help">Modelo: {{ pending.model_name }} · Basada en {{ (pending.stats_json|from_json).total_surveys }} encuesta(s).</p></div>
+    <form method="post" action="{{ url_for('guardar_estrategia') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-success" type="submit">Guardar estrategia</button></form>
+  </div>
+  <div class="markdown-output">{{ pending.content|markdown_safe }}</div>
+</div>
+{% endif %}
+<div class="table-card">
+  <h2>Historial de estrategias guardadas</h2>
+  {% if history %}
+  <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Fecha</th><th>Modelo</th><th>Acción</th></tr></thead><tbody>
+  {% for item in history %}<tr><td>{{ item.created_at.strftime("%Y-%m-%d %H:%M") }}</td><td>{{ item.model_name or "No especificado" }}</td><td><a class="btn btn-outline-primary btn-sm" href="{{ url_for('ver_estrategia', strategy_id=item.id) }}">Ver estrategia</a></td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}<p class="text-secondary mb-0">Todavía no hay estrategias guardadas.</p>{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/estrategia.js') }}"></script>{% endblock %}

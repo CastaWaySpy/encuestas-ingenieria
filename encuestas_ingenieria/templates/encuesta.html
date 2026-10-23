@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Encuesta | Encuestas Ingeniería{% endblock %}
+{% block content %}
+<div class="page-heading"><span class="eyebrow">FORMULARIO</span><h1>Encuesta estudiantil</h1><p>Dirigida a estudiantes del sexto semestre de Ingeniería en Sistemas de la Universidad Mariano Gálvez de Guatemala.</p></div>
+<div class="form-shell">
+  <div class="notice-box mb-4"><strong>Uso académico:</strong> las respuestas se utilizarán para análisis estadístico y propuestas de marketing. No escribas información personal en los comentarios.</div>
+  <form method="post" id="surveyForm" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="question-block">
+      <label class="form-label" for="main_medium">1. ¿A través de qué medio conociste por primera vez la carrera? <span class="required">*</span></label>
+      <select class="form-select" id="main_medium" name="main_medium" required>
+        <option value="">Selecciona una opción</option>
+        {% for option in medium_options %}
+        <option value="{{ option }}" {% if values.get('main_medium') == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select><div class="invalid-feedback">Selecciona el medio principal.</div>
+    </div>
+    <div class="question-block">
+      <label class="form-label">2. ¿Por qué otros medios recibiste información sobre la carrera?</label>
+      <p class="field-help">Puedes marcar varias opciones. El medio principal no se contará nuevamente como adicional.</p>
+      <div class="option-grid">
+      {% for option in medium_options %}
+        <label class="check-option"><input type="checkbox" name="additional_medium" value="{{ option }}" {% if option in values.get('additional_medium', []) %}checked{% endif %}><span>{{ option }}</span></label>
+      {% endfor %}
+      </div>
+    </div>
+    <div class="question-block">
+      <label class="form-label" for="influence_medium">3. ¿Cuál medio influyó más en tu decisión de estudiar la carrera? <span class="required">*</span></label>
+      <select class="form-select" id="influence_medium" name="influence_medium" required>
+        <option value="">Selecciona una opción</option>
+        {% for option in medium_options %}
+        <option value="{{ option }}" {% if values.get('influence_medium') == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select><div class="invalid-feedback">Selecciona el medio de mayor influencia.</div>
+    </div>
+    <div class="question-block">
+      <label class="form-label" for="content_preference">4. ¿Qué tipo de contenido te habría llamado más la atención antes de ingresar? <span class="required">*</span></label>
+      <select class="form-select" id="content_preference" name="content_preference" required>
+        <option value="">Selecciona una opción</option>
+        {% for option in content_options %}
+        <option value="{{ option }}" {% if values.get('content_preference') == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select><div class="invalid-feedback">Selecciona un tipo de contenido.</div>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6 question-block">
+        <label class="form-label" for="age">5. Edad (opcional)</label>
+        <input class="form-control" type="number" id="age" name="age" min="15" max="100" value="{{ values.get('age', '') }}" placeholder="Edad en años">
+        <div class="invalid-feedback">Ingresa una edad entre 15 y 100.</div>
+      </div>
+      <div class="col-md-6 question-block">
+        <label class="form-label" for="sex">6. Sexo (opcional)</label>
+        <select class="form-select" id="sex" name="sex">
+          <option value="">Prefiero no responder</option>
+          {% for option in ["Femenino", "Masculino", "Otro", "Prefiero no responder"] %}
+          <option value="{{ option }}" {% if values.get('sex') == option %}selected{% endif %}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="question-block">
+      <label class="form-label" for="comments">7. Comentarios o sugerencias (opcional)</label>
+      <textarea class="form-control" id="comments" name="comments" rows="3" maxlength="1000" placeholder="Comparte sugerencias generales; evita datos personales.">{{ values.get('comments', '') }}</textarea>
+      <div class="form-text"><span id="charCount">0</span>/1000 caracteres</div>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-4">
+      <button class="btn btn-primary btn-lg" type="submit">Enviar encuesta</button>
+      <button class="btn btn-outline-secondary btn-lg" type="reset">Limpiar formulario</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/encuesta.js') }}"></script>{% endblock %}

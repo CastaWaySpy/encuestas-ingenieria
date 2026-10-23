@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Resultados | Encuestas Ingeniería{% endblock %}
+{% block content %}
+<div class="page-heading"><span class="eyebrow">ANÁLISIS DESCRIPTIVO</span><h1>Resultados estadísticos</h1><p>Los cálculos y gráficas se basan en las encuestas almacenadas en la base de datos.</p></div>
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="metric-card"><span class="metric-label">Total de encuestas</span><strong>{{ stats.total_surveys }}</strong></div></div>
+  <div class="col-md-4"><div class="metric-card"><span class="metric-label">Medio principal más frecuente</span><strong class="metric-text">{{ stats.top_main_medium.label if stats.top_main_medium else "Sin datos" }}</strong><small>{% if stats.top_main_medium %}{{ stats.top_main_medium.count }} · {{ stats.top_main_medium.percentage }}%{% endif %}</small></div></div>
+  <div class="col-md-4"><div class="metric-card"><span class="metric-label">Medio de mayor influencia</span><strong class="metric-text">{{ stats.top_influence_medium.label if stats.top_influence_medium else "Sin datos" }}</strong></div></div>
+</div>
+{% if stats.total_surveys == 0 %}
+<div class="empty-state"><div class="empty-symbol">∅</div><h2>Aún no hay resultados</h2><p>Registra encuestas para visualizar las frecuencias, porcentajes y gráficas.</p><a class="btn btn-primary" href="{{ url_for('encuesta') }}">Registrar primera encuesta</a></div>
+{% else %}
+<div class="alert alert-info">La muestra actual contiene {{ stats.total_surveys }} encuesta(s). Estos resultados describen las respuestas recopiladas y no necesariamente representan a todos los futuros estudiantes.</div>
+<div class="row g-4 mb-4">
+  <div class="col-lg-6"><div class="chart-card"><h2>Medio principal de descubrimiento</h2><canvas id="mainChart" aria-label="Gráfica de barras del medio principal"></canvas></div></div>
+  <div class="col-lg-6"><div class="chart-card"><h2>Distribución de medios principales</h2><canvas id="mainDoughnut" aria-label="Gráfica circular de medios principales"></canvas></div></div>
+  <div class="col-lg-6"><div class="chart-card"><h2>Medio que más influyó en la decisión</h2><canvas id="influenceChart" aria-label="Gráfica de influencia"></canvas></div></div>
+  <div class="col-lg-6"><div class="chart-card"><h2>Contenido publicitario preferido</h2><canvas id="contentChart" aria-label="Gráfica de contenido preferido"></canvas></div></div>
+  <div class="col-12"><div class="chart-card"><h2>Otros medios mencionados</h2><p class="field-help">Pregunta de selección múltiple: los porcentajes se calculan respecto al total de encuestas y pueden sumar más del 100%.</p><canvas id="additionalChart" aria-label="Gráfica de medios adicionales"></canvas></div></div>
+</div>
+<div class="table-card mb-4">
+  <h2>Frecuencia por medio principal</h2>
+  <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Medio</th><th>Frecuencia absoluta (fi)</th><th>Frecuencia relativa (hi)</th><th>Porcentaje</th></tr></thead><tbody>
+  {% for item in stats.main_distribution if item.count > 0 %}
+  <tr><td>{{ item.label }}</td><td>{{ item.count }}</td><td>{{ "%.4f"|format(item.relative_frequency) }}</td><td>{{ "%.2f"|format(item.percentage) }}%</td></tr>
+  {% endfor %}
+  </tbody></table></div>
+  <p class="field-help mb-0">hi = fi / N · Porcentaje = (fi / N) × 100, donde N es el número de respuestas válidas.</p>
+</div>
+<div class="table-card mb-4">
+  <h2>Frecuencia por medio de influencia</h2>
+  <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Medio</th><th>Frecuencia absoluta</th><th>Frecuencia relativa</th><th>Porcentaje</th></tr></thead><tbody>
+  {% for item in stats.influence_distribution if item.count > 0 %}
+  <tr><td>{{ item.label }}</td><td>{{ item.count }}</td><td>{{ "%.4f"|format(item.relative_frequency) }}</td><td>{{ "%.2f"|format(item.percentage) }}%</td></tr>
+  {% endfor %}
+  </tbody></table></div>
+</div>
+{% endif %}
+<div class="table-card">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3"><h2 class="mb-0">Encuestas registradas</h2><span class="small text-secondary">{{ total }} resultado(s) con filtros</span></div>
+  <form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-sm-6 col-lg-3"><label class="form-label" for="start">Desde</label><input class="form-control" type="date" id="start" name="start" value="{{ start }}"></div>
+    <div class="col-sm-6 col-lg-3"><label class="form-label" for="end">Hasta</label><input class="form-control" type="date" id="end" name="end" value="{{ end }}"></div>
+    <div class="col-sm-8 col-lg-4"><label class="form-label" for="medium">Medio principal</label><select class="form-select" id="medium" name="medium"><option value="">Todos</option>{% for option in mediums %}<option value="{{ option }}" {% if medium == option %}selected{% endif %}>{{ option }}</option>{% endfor %}</select></div>
+    <div class="col-sm-4 col-lg-2"><button class="btn btn-primary w-100" type="submit">Filtrar</button></div>
+  </form>
+  {% if rows %}
+  <div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>ID</th><th>Medio principal</th><th>Influencia</th><th>Contenido preferido</th><th>Fecha</th></tr></thead><tbody>
+  {% for row in rows %}<tr><td>#{{ row.id }}</td><td>{{ row.main_medium }}</td><td>{{ row.influence_medium }}</td><td>{{ row.content_preference }}</td><td>{{ row.created_at.strftime("%Y-%m-%d %H:%M") }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  <nav class="d-flex justify-content-between align-items-center"><span class="small text-secondary">Página {{ page }} de {{ pages }}</span><div class="d-flex gap-2">{% if page > 1 %}<a class="btn btn-outline-secondary btn-sm" href="{{ url_for('resultados', page=page-1, start=start, end=end, medium=medium) }}">Anterior</a>{% endif %}{% if page < pages %}<a class="btn btn-outline-secondary btn-sm" href="{{ url_for('resultados', page=page+1, start=start, end=end, medium=medium) }}">Siguiente</a>{% endif %}</div></nav>
+  {% else %}<p class="text-secondary mb-0">No hay registros que coincidan con los filtros.</p>{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const statsData = {{ stats|tojson }};
+function renderBar(id, distribution, horizontal=false) {
+  const items = distribution.filter(x => x.count > 0);
+  new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: { labels: items.map(x => x.label), datasets: [{ label: 'Respuestas', data: items.map(x => x.count), borderWidth: 1 }] },
+    options: { indexAxis: horizontal ? 'y' : 'x', responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+}
+if (statsData.total_surveys > 0) {
+  renderBar('mainChart', statsData.main_distribution, true);
+  renderBar('influenceChart', statsData.influence_distribution, true);
+  renderBar('contentChart', statsData.content_distribution, true);
+  renderBar('additionalChart', statsData.additional_distribution, true);
+  const mainItems = statsData.main_distribution.filter(x => x.count > 0);
+  new Chart(document.getElementById('mainDoughnut'), {
+    type: 'doughnut',
+    data: { labels: mainItems.map(x => x.label), datasets: [{ data: mainItems.map(x => x.count) }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+}
+</script>
+{% endblock %}

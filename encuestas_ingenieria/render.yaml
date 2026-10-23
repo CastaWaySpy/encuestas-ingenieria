@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: encuestas-ingenieria
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # 1 worker + hilos: las tablas se crean una sola vez al arrancar.
+    # --timeout 120: Gemini puede tardar más de los 30 s que trae gunicorn por defecto.
+    startCommand: gunicorn app:app --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /healthz
+    envVars:
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false          # pega aquí la URL de tu base PostgreSQL
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: ADMIN_PASSWORD
+        sync: false          # protege la sección "Estrategia con IA"
