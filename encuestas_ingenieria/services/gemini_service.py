@@ -32,6 +32,10 @@ Reglas:
 - Si faltan datos, indícalo y propone cómo obtenerlos.
 - No recibiste datos individuales ni comentarios; no inventes citas.
 - No devuelvas HTML. Usa Markdown seguro con títulos, listas y tablas sencillas.
+- No uses LaTeX ni el signo $ para fórmulas o cifras; escribe valores como N=5 y montos como Q500.
+- Las gráficas de barras de los medios y contenidos las genera la aplicación automáticamente: no dibujes gráficas con texto, símbolos ni código.
+- Para presentar datos usa tablas Markdown válidas (fila de encabezado, fila separadora con ---) y deja una línea en blanco antes de cada tabla.
+- Cada tabla debe tener máximo 6 columnas. El plan de acción tiene muchos campos: divídelo en dos tablas con la columna "Actividad" repetida en ambas.
 
 Incluye: 1) resumen ejecutivo, 2) diagnóstico estadístico, 3) público objetivo e información por validar,
 4) objetivo general y al menos cuatro objetivos específicos medibles, con línea base y plazos,

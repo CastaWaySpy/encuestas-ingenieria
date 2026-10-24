@@ -3,6 +3,9 @@
 {% block content %}
 <a href="{{ url_for('estrategia') }}" class="text-link">← Volver al historial</a>
 <div class="page-heading mt-3"><span class="eyebrow">ESTRATEGIA GUARDADA #{{ item.id }}</span><h1>Estrategia de marketing</h1><p>Generada el {{ item.created_at.strftime("%Y-%m-%d %H:%M") }} · Modelo: {{ item.model_name or "No especificado" }}</p></div>
-<div class="strategy-panel"><div class="markdown-output">{{ item.content|markdown_safe }}</div></div>
+<div class="strategy-panel"><div class="markdown-output">{{ item.content|markdown_safe }}</div>
+  {% with stats = item.stats_json|from_json %}{% include "_graficas_estrategia.html" %}{% endwith %}
+</div>
 <div class="table-card mt-4"><h2>Resumen estadístico utilizado</h2><pre class="stats-json">{{ item.stats_json }}</pre></div>
 {% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/graficas_estrategia.js') }}"></script>{% endblock %}

@@ -1,0 +1,12 @@
+{% if stats and stats.total_surveys %}
+<div class="mt-4" id="graficasEstrategia" data-stats='{{ stats|tojson }}'>
+  <h2 class="h5 mb-1">Gráficas de apoyo</h2>
+  <p class="field-help">Generadas directamente con los datos reales de las encuestas (no por la IA).</p>
+  <div class="row g-4">
+    <div class="col-lg-6"><div class="chart-card"><h2>Medio principal de descubrimiento</h2><canvas id="gMain" aria-label="Gráfica del medio principal"></canvas></div></div>
+    <div class="col-lg-6"><div class="chart-card"><h2>Medio que más influyó en la decisión</h2><canvas id="gInfluence" aria-label="Gráfica de influencia"></canvas></div></div>
+    <div class="col-lg-6"><div class="chart-card"><h2>Contenido publicitario preferido</h2><canvas id="gContent" aria-label="Gráfica de contenido preferido"></canvas></div></div>
+    <div class="col-lg-6"><div class="chart-card"><h2>Otros medios mencionados</h2><canvas id="gAdditional" aria-label="Gráfica de medios adicionales"></canvas></div></div>
+  </div>
+</div>
+{% endif %}

@@ -16,6 +16,7 @@
     <form method="post" action="{{ url_for('guardar_estrategia') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-success" type="submit">Guardar estrategia</button></form>
   </div>
   <div class="markdown-output">{{ pending.content|markdown_safe }}</div>
+  {% with stats = pending.stats_json|from_json %}{% include "_graficas_estrategia.html" %}{% endwith %}
 </div>
 {% endif %}
 <div class="table-card">
@@ -27,4 +28,5 @@
   {% else %}<p class="text-secondary mb-0">Todavía no hay estrategias guardadas.</p>{% endif %}
 </div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/estrategia.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/estrategia.js') }}"></script>
+<script src="{{ url_for('static', filename='js/graficas_estrategia.js') }}"></script>{% endblock %}

@@ -1,4 +1,5 @@
 import os
+import re
 import hmac
 from functools import wraps
 from datetime import datetime, date
@@ -17,24 +18,42 @@ from services.estadisticas_service import build_statistics
 from services.gemini_service import generate_strategy, GeminiServiceError
 from markupsafe import Markup
 
+ETIQUETAS_PERMITIDAS = [
+    "h1", "h2", "h3", "h4", "p", "br", "hr",
+    "strong", "b", "em", "i", "ul", "ol", "li",
+    "blockquote", "code", "pre",
+    "table", "thead", "tbody", "tr", "th", "td",
+]
+ATRIBUTOS_PERMITIDOS = {"th": ["align"], "td": ["align"]}
+LATEX_SIMPLE = {r"\times": "×", r"\geq": "≥", r"\leq": "≤", r"\approx": "≈",
+                r"\neq": "≠", r"\%": "%", r"\rightarrow": "→", r"\to": "→"}
+
+
+def _preparar_markdown(texto):
+    """Arregla detalles típicos de la salida de Gemini antes de convertirla a HTML."""
+    # Gemini a veces escribe fórmulas como $N=5$; la app no usa LaTeX, así que se quitan los $.
+    texto = re.sub(r"\$\$(.+?)\$\$", r"\1", texto, flags=re.S)
+    texto = re.sub(r"\$(\S(?:[^$\n]*?\S)?)\$", r"\1", texto)
+    for latex, simbolo in LATEX_SIMPLE.items():
+        texto = texto.replace(latex, simbolo)
+    # Una tabla Markdown necesita una línea en blanco antes; se agrega si falta.
+    lineas, salida = texto.splitlines(), []
+    for linea in lineas:
+        if (linea.strip().startswith("|") and salida
+                and salida[-1].strip() and not salida[-1].strip().startswith("|")):
+            salida.append("")
+        salida.append(linea)
+    return "\n".join(salida)
+
+
 def render_markdown_seguro(texto):
-    html = markdown.markdown(
-        texto,
-        extensions=["extra", "nl2br"]
-    )
+    html = markdown.markdown(_preparar_markdown(texto), extensions=["extra", "nl2br"])
+    html = bleach.clean(html, tags=ETIQUETAS_PERMITIDAS,
+                        attributes=ATRIBUTOS_PERMITIDOS, strip=True)
+    # Tablas con el estilo de Bootstrap y desplazamiento horizontal en pantallas pequeñas.
+    html = html.replace("<table>", '<div class="table-responsive"><table class="table table-bordered table-striped table-sm align-middle tabla-estrategia">')
+    return html.replace("</table>", "</table></div>")
 
-    etiquetas_permitidas = [
-        "p", "br", "h1", "h2", "h3", "h4",
-        "strong", "em", "ul", "ol", "li",
-        "blockquote", "code", "pre", "hr"
-    ]
-
-    return bleach.clean(
-        html,
-        tags=etiquetas_permitidas,
-        attributes={},
-        strip=True
-    )
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -82,26 +101,7 @@ def from_json_filter(value):
 def markdown_safe(texto):
     if not texto:
         return Markup("")
-
-    html = markdown.markdown(
-        texto,
-        extensions=["extra", "nl2br"]
-    )
-
-    etiquetas_permitidas = [
-        "h1", "h2", "h3", "h4", "p", "br", "hr",
-        "strong", "b", "em", "i", "ul", "ol", "li",
-        "blockquote", "code", "pre"
-    ]
-
-    html_limpio = bleach.clean(
-        html,
-        tags=etiquetas_permitidas,
-        attributes={},
-        strip=True
-    )
-
-    return Markup(html_limpio)
+    return Markup(render_markdown_seguro(texto))
 
 @app.context_processor
 def inject_globals():
