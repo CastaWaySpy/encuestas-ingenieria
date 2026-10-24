@@ -6,6 +6,6 @@
 <div class="strategy-panel"><div class="markdown-output">{{ item.content|markdown_safe }}</div>
   {% with stats = item.stats_json|from_json %}{% include "_graficas_estrategia.html" %}{% endwith %}
 </div>
-<div class="table-card mt-4"><h2>Resumen estadístico utilizado</h2><pre class="stats-json">{{ item.stats_json }}</pre></div>
+{% comment %} <div class="table-card mt-4"><h2>Resumen estadístico utilizado</h2><pre class="stats-json">{{ item.stats_json }}</pre></div> {% endcomment %}
 {% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='js/graficas_estrategia.js') }}"></script>{% endblock %}
